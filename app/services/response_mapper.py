@@ -2,7 +2,6 @@ import time
 import uuid
 from typing import Any
 
-from app.schemas.anthropic import AnthropicMessageResponse, AnthropicTextContent, AnthropicUsage
 from app.schemas.openai import (
     OpenAIChatCompletionResponse,
     OpenAIChoice,
@@ -41,18 +40,5 @@ def map_ollama_to_openai_response(public_model: str, ollama_response: dict[str, 
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
             total_tokens=prompt_tokens + completion_tokens,
-        ),
-    )
-
-
-def map_ollama_to_anthropic_response(public_model: str, ollama_response: dict[str, Any]) -> AnthropicMessageResponse:
-    return AnthropicMessageResponse(
-        id=f"msg_{uuid.uuid4().hex}",
-        model=public_model,
-        content=[AnthropicTextContent(text=(ollama_response.get("message") or {}).get("content", ""))],
-        stop_reason="end_turn",
-        usage=AnthropicUsage(
-            input_tokens=int(ollama_response.get("prompt_eval_count") or 0),
-            output_tokens=int(ollama_response.get("eval_count") or 0),
         ),
     )

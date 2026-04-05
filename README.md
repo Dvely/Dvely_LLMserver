@@ -2,61 +2,54 @@
 
 Jetson Orin Nano에서 동작하는 로컬 LLM API 게이트웨이입니다.
 
-이 서버는 Ollama 앞단에서 동작하며, 외부 클라이언트가 OpenAI/Anthropic 호환 API 형태로 로컬 모델을 호출할 수 있게 해줍니다.
-
-테스트 전 코드로, jetson 배포환경의 api 호출 테스트 예정.
-nginx 같은 서버배포환경 세팅파일도 올릴지 고민중
+이 서버는 Ollama 앞단에서 동작하며, 외부 클라이언트가 OpenAI 호환 API 형태로 로컬 모델을 호출할 수 있게 해줍니다.
 
 ## 핵심 기능
 
 - FastAPI 기반 비동기 API 서버
 - Ollama 연동 (`http://127.0.0.1:11434` 기본)
 - OpenAI 호환 엔드포인트
-	- `POST /v1/chat/completions`
-- Anthropic 호환 엔드포인트
-	- `POST /v1/messages`
-- 모델 alias 선택 지원 (`model` 필드)
-- API Key 인증 (`Authorization: Bearer ...`, `x-api-key`)
+  - `POST /v1/chat/completions`
+- 모델 선택 지원 (`model` 필드)
+- API Key 인증 (`Authorization: Bearer ...`)
 - SSE 스트리밍 지원
 - 요청 ID 및 기본 구조화 로깅
 
-## 모델 선택 방식
+## 모델
 
-클라이언트는 공개 alias를 `model` 필드에 넣어 호출합니다.
+기본 공개 모델(`model` 필드 값)은 아래 2개입니다.
 
-- `qwen-chat` -> `qwen3.5:2b`
-- `exaone-chat` -> `exaone3.5:2.4b`
+- `qwen2.5-coder:3b`
+- `exaone-deep:2.4b`
 
-`GET /v1/models`는 공개 alias만 반환합니다.
+`GET /v1/models`는 위 공개 모델 ID를 그대로 반환합니다.
 
 ## 프로젝트 구조
 
 ```text
 app/
-	main.py
-	core/
-		config.py
-		logging.py
-		security.py
-		errors.py
-	api/
-		routes/
-			health.py
-			models.py
-			openai.py
-			anthropic.py
-	schemas/
-		common.py
-		openai.py
-		anthropic.py
-		ollama.py
-	services/
-		ollama_client.py
-		model_registry.py
-		response_mapper.py
-		streaming.py
-	middleware/
-		request_id.py
+  main.py
+  core/
+    config.py
+    logging.py
+    security.py
+    errors.py
+  api/
+    routes/
+      health.py
+      models.py
+      openai.py
+  schemas/
+    common.py
+    openai.py
+    ollama.py
+  services/
+    ollama_client.py
+    model_registry.py
+    response_mapper.py
+    streaming.py
+  middleware/
+    request_id.py
 README.md
 requirements.txt
 .env.example
@@ -68,11 +61,9 @@ requirements.txt
 2. Ollama 설치 및 실행
 3. 모델 다운로드
 
-예시:
-
 ```bash
-ollama pull qwen3.5:2b
-ollama pull exaone3.5:2.4b
+ollama pull qwen2.5-coder:3b
+ollama pull exaone-deep:2.4b
 ```
 
 Ollama 서버가 로컬에서 떠 있어야 합니다.
@@ -108,10 +99,10 @@ OLLAMA_TIMEOUT=300
 OLLAMA_KEEP_ALIVE=15m
 LOG_LEVEL=INFO
 
-MODEL_QWEN_ALIAS=qwen-chat
-MODEL_QWEN_NAME=qwen3.5:2b
-MODEL_EXAONE_ALIAS=exaone-chat
-MODEL_EXAONE_NAME=exaone3.5:2.4b
+MODEL_QWEN_ALIAS=qwen2.5-coder:3b
+MODEL_QWEN_NAME=qwen2.5-coder:3b
+MODEL_EXAONE_ALIAS=exaone-deep:2.4b
+MODEL_EXAONE_NAME=exaone-deep:2.4b
 ```
 
 ## 실행
@@ -140,79 +131,45 @@ curl http://127.0.0.1:8000/readyz
 
 ```bash
 curl -H "Authorization: Bearer sk-local-dev" \
-	http://127.0.0.1:8000/v1/models
+  http://127.0.0.1:8000/v1/models
 ```
 
-### 4) OpenAI 호환 - qwen-chat
+### 4) Chat Completions - qwen2.5-coder:3b
 
 ```bash
 curl -X POST http://127.0.0.1:8000/v1/chat/completions \
-	-H "Content-Type: application/json" \
-	-H "Authorization: Bearer sk-local-dev" \
-	-d '{
-		"model": "qwen-chat",
-		"messages": [
-			{"role": "system", "content": "You are a helpful Korean assistant."},
-			{"role": "user", "content": "안녕"}
-		],
-		"temperature": 0.2,
-		"max_tokens": 256,
-		"stream": false
-	}'
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-local-dev" \
+  -d '{
+    "model": "qwen2.5-coder:3b",
+    "messages": [
+      {"role": "system", "content": "You are a helpful Korean assistant."},
+      {"role": "user", "content": "안녕"}
+    ],
+    "temperature": 0.2,
+    "max_tokens": 256,
+    "stream": false
+  }'
 ```
 
-### 5) OpenAI 호환 - exaone-chat
+### 5) Chat Completions - exaone-deep:2.4b
 
 ```bash
 curl -X POST http://127.0.0.1:8000/v1/chat/completions \
-	-H "Content-Type: application/json" \
-	-H "Authorization: Bearer sk-local-dev" \
-	-d '{
-		"model": "exaone-chat",
-		"messages": [
-			{"role": "user", "content": "Jetson에서 추론 속도 최적화 팁 알려줘"}
-		],
-		"stream": false
-	}'
-```
-
-### 6) Anthropic 호환 - qwen-chat (x-api-key)
-
-```bash
-curl -X POST http://127.0.0.1:8000/v1/messages \
-	-H "Content-Type: application/json" \
-	-H "x-api-key: sk-local-dev" \
-	-d '{
-		"model": "qwen-chat",
-		"system": "Respond in Korean.",
-		"messages": [
-			{"role": "user", "content": "안녕하세요"}
-		],
-		"max_tokens": 256,
-		"stream": false
-	}'
-```
-
-### 7) Anthropic 호환 - exaone-chat (Bearer)
-
-```bash
-curl -X POST http://127.0.0.1:8000/v1/messages \
-	-H "Content-Type: application/json" \
-	-H "Authorization: Bearer sk-local-dev" \
-	-d '{
-		"model": "exaone-chat",
-		"messages": [
-			{"role": "user", "content": "자기소개 해줘"}
-		],
-		"max_tokens": 128,
-		"stream": false
-	}'
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-local-dev" \
+  -d '{
+    "model": "exaone-deep:2.4b",
+    "messages": [
+      {"role": "user", "content": "Jetson에서 추론 속도 최적화 팁 알려줘"}
+    ],
+    "stream": false
+  }'
 ```
 
 ## 스트리밍 사용
 
-- OpenAI 호환: `POST /v1/chat/completions` + `"stream": true`
-- Anthropic 호환: `POST /v1/messages` + `"stream": true`
+- `POST /v1/chat/completions` + `"stream": true`
 
 응답은 `text/event-stream`으로 반환됩니다.
 
@@ -222,10 +179,10 @@ curl -X POST http://127.0.0.1:8000/v1/messages \
 
 ```json
 {
-	"error": {
-		"type": "invalid_request_error",
-		"message": "..."
-	}
+  "error": {
+    "type": "invalid_request_error",
+    "message": "..."
+  }
 }
 ```
 

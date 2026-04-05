@@ -21,10 +21,10 @@ class Settings:
         api_keys_raw = os.getenv("API_KEYS", "sk-local-dev")
         self.api_keys: List[str] = [k.strip() for k in api_keys_raw.split(",") if k.strip()]
 
-        qwen_alias = os.getenv("MODEL_QWEN_ALIAS", "qwen-chat")
-        qwen_name = os.getenv("MODEL_QWEN_NAME", "qwen3.5:2b")
-        exaone_alias = os.getenv("MODEL_EXAONE_ALIAS", "exaone-chat")
-        exaone_name = os.getenv("MODEL_EXAONE_NAME", "exaone3.5:2.4b")
+        qwen_alias = os.getenv("MODEL_QWEN_ALIAS", "qwen2.5-coder:3b")
+        qwen_name = os.getenv("MODEL_QWEN_NAME", "qwen2.5-coder:3b")
+        exaone_alias = os.getenv("MODEL_EXAONE_ALIAS", "exaone-deep:2.4b")
+        exaone_name = os.getenv("MODEL_EXAONE_NAME", "exaone-deep:2.4b")
 
         self.model_alias_map: Dict[str, str] = {
             qwen_alias: qwen_name,

@@ -28,15 +28,3 @@ async def verify_api_key_openai(
     token = _extract_bearer_token(authorization)
     if not _is_valid_api_key(token):
         raise APIError(401, "authentication_error", "Invalid or missing API key")
-
-
-async def verify_api_key_anthropic(
-    request: Request,
-    authorization: Optional[str] = Header(default=None),
-    x_api_key: Optional[str] = Header(default=None, alias="x-api-key"),
-) -> None:
-    _ = request
-    token = _extract_bearer_token(authorization)
-    candidate = x_api_key or token
-    if not _is_valid_api_key(candidate):
-        raise APIError(401, "authentication_error", "Invalid or missing API key")
