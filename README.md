@@ -115,6 +115,12 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 아래 예시에서 API 키는 `sk-local-dev`를 사용합니다.
 
+Swagger docs 사용 시 인증 방법:
+
+- `/docs` 우측 상단 `Authorize` 클릭
+- `Value`에 API 키 입력 (예: `sk-local-dev`)
+- Swagger가 `Authorization: Bearer <API_KEY>` 헤더를 자동 추가
+
 ### 1) Health
 
 ```bash

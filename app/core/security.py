@@ -1,9 +1,13 @@
 from typing import Optional
 
-from fastapi import Header, Request
+from fastapi import Request, Security
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.config import get_settings
 from app.core.errors import APIError
+
+
+http_bearer = HTTPBearer(auto_error=False)
 
 
 def _extract_bearer_token(authorization: Optional[str]) -> Optional[str]:
@@ -29,9 +33,20 @@ def _is_valid_api_key(api_key: Optional[str]) -> bool:
 
 async def verify_api_key_openai(
     request: Request,
-    authorization: Optional[str] = Header(default=None),
+    credentials: Optional[HTTPAuthorizationCredentials] = Security(http_bearer),
 ) -> None:
     _ = request
-    token = _extract_bearer_token(authorization)
+    token = None
+    if credentials:
+        # HTTPBearer returns scheme/token separately and Swagger Authorize sets this path.
+        if credentials.scheme and credentials.scheme.lower() == "bearer":
+            token = credentials.credentials.strip() if credentials.credentials else None
+        elif credentials.credentials:
+            # Be tolerant to non-standard cases.
+            token = _extract_bearer_token(f"{credentials.scheme} {credentials.credentials}")
+
+    if not token:
+        token = _extract_bearer_token(request.headers.get("Authorization"))
+
     if not _is_valid_api_key(token):
         raise APIError(401, "authentication_error", "Invalid or missing API key")
