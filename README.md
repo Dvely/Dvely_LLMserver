@@ -5,6 +5,7 @@ Jetson Orin Nano에서 동작하는 로컬 LLM API 게이트웨이입니다.
 이 서버는 Ollama 앞단에서 동작하며, 외부 클라이언트가 OpenAI/Anthropic 호환 API 형태로 로컬 모델을 호출할 수 있게 해줍니다.
 
 테스트 전 코드로, jetson 배포환경의 api 호출 테스트 예정.
+nginx 같은 서버배포환경 세팅파일도 올릴지 고민중
 
 ## 핵심 기능
 
