@@ -9,10 +9,17 @@ from app.core.errors import APIError
 def _extract_bearer_token(authorization: Optional[str]) -> Optional[str]:
     if not authorization:
         return None
-    parts = authorization.split(" ", 1)
-    if len(parts) != 2 or parts[0].lower() != "bearer":
+    value = authorization.strip()
+    if not value:
         return None
-    return parts[1].strip()
+
+    parts = value.split(" ", 1)
+    if len(parts) == 2 and parts[0].lower() == "bearer":
+        token = parts[1].strip()
+        return token or None
+
+    # Accept raw API keys as-is for Swagger docs manual header input.
+    return value
 
 
 def _is_valid_api_key(api_key: Optional[str]) -> bool:
