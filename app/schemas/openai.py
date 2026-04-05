@@ -1,20 +1,44 @@
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class OpenAIChatMessage(BaseModel):
-    role: Literal["system", "user", "assistant", "tool"]
-    content: str
+    role: Literal["system", "user", "assistant", "tool"] = Field(
+        description="Message role",
+        examples=["user"],
+    )
+    content: str = Field(
+        min_length=1,
+        description="Message content",
+        examples=["파이썬으로 두 수의 합을 반환하는 함수만 작성해줘."],
+    )
 
 
 class OpenAIChatCompletionRequest(BaseModel):
-    model: str = Field(min_length=1)
-    messages: list[OpenAIChatMessage] = Field(min_length=1)
-    temperature: Optional[float] = None
-    top_p: Optional[float] = None
-    max_tokens: Optional[int] = None
-    stream: bool = False
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "model": "qwen2.5-coder:3b",
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": "파이썬으로 두 수의 합을 반환하는 함수만 작성해줘.",
+                        }
+                    ],
+                    "stream": False,
+                }
+            ]
+        }
+    )
+
+    model: str = Field(min_length=1, description="Public model alias")
+    messages: list[OpenAIChatMessage] = Field(min_length=1, description="Conversation messages")
+    temperature: Optional[float] = Field(default=None, description="Sampling temperature (optional)")
+    top_p: Optional[float] = Field(default=None, description="Nucleus sampling probability (optional)")
+    max_tokens: Optional[int] = Field(default=None, description="Maximum generated tokens (optional)")
+    stream: bool = Field(default=False, description="If true, returns SSE stream chunks")
 
 
 class OpenAIChoiceMessage(BaseModel):

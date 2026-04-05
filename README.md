@@ -173,9 +173,45 @@ curl -X POST http://127.0.0.1:8000/v1/chat/completions \
   }'
 ```
 
+### 6) Chat Completions 요청 명세 (중요)
+
+`POST /v1/chat/completions`
+
+필수 필드:
+
+- `model` (string): 모델 alias (`qwen2.5-coder:3b`, `exaone-deep:2.4b`)
+- `messages` (array, 최소 1개): 각 항목은 `{ "role": "system|user|assistant|tool", "content": "..." }`
+
+선택 필드:
+
+- `temperature` (number)
+- `top_p` (number)
+- `max_tokens` (integer)
+- `stream` (boolean, 기본값 `false`)
+
+최소 요청 예시(정상):
+
+```json
+{
+  "model": "qwen2.5-coder:3b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "파이썬으로 두 수의 합을 반환하는 함수만 작성해줘."
+    }
+  ],
+  "stream": false
+}
+```
+
 ## 스트리밍 사용
 
 - `POST /v1/chat/completions` + `"stream": true`
+
+`stream` 값 의미:
+
+- `false`: 응답이 모두 생성된 뒤 한 번에 JSON 반환 (`application/json`)
+- `true`: 생성 중인 토큰 조각을 순차 전송 (`text/event-stream`, SSE)
 
 응답은 `text/event-stream`으로 반환됩니다.
 
