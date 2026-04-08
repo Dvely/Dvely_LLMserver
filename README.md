@@ -19,12 +19,15 @@ Jetson Orin Nano에서 동작하는 로컬 LLM API 게이트웨이입니다.
 
 ## 모델
 
-기본 공개 모델(`model` 필드 값)은 아래 2개입니다.
+기본 공개 모델(`model` 필드 값)은 아래 3개입니다.
 
 - `qwen2.5-coder:3b`
+- `qwen3:8b`
 - `exaone-deep:2.4b`
 
 `GET /v1/models`는 위 공개 모델 ID를 그대로 반환합니다.
+
+참고: `exaone-deep:2.4b`는 응답 대기시간이 길어 기본 `OLLAMA_TIMEOUT=300` 환경에서 타임아웃이 잦을 수 있습니다. 필요하면 `OLLAMA_TIMEOUT` 값을 더 크게 설정해 주세요.
 
 ## 프로젝트 구조
 
@@ -65,6 +68,7 @@ requirements.txt
 
 ```bash
 ollama pull qwen2.5-coder:3b
+ollama pull qwen3:8b
 ollama pull exaone-deep:2.4b
 ```
 
@@ -103,6 +107,8 @@ LOG_LEVEL=INFO
 
 MODEL_QWEN_ALIAS=qwen2.5-coder:3b
 MODEL_QWEN_NAME=qwen2.5-coder:3b
+MODEL_QWEN3_ALIAS=qwen3:8b
+MODEL_QWEN3_NAME=qwen3:8b
 MODEL_EXAONE_ALIAS=exaone-deep:2.4b
 MODEL_EXAONE_NAME=exaone-deep:2.4b
 ```
@@ -181,7 +187,7 @@ curl -X POST http://127.0.0.1:8000/v1/chat/completions \
 
 필수 필드:
 
-- `model` (string): 모델 alias (`qwen2.5-coder:3b`, `exaone-deep:2.4b`)
+- `model` (string): 모델 alias (`qwen2.5-coder:3b`, `qwen3:8b`, `exaone-deep:2.4b`)
 - `messages` (array, 최소 1개): 각 항목은 `{ "role": "system|user|assistant|tool", "content": "..." }`
 
 선택 필드:

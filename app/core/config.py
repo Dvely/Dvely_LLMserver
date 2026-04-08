@@ -23,11 +23,14 @@ class Settings:
 
         qwen_alias = os.getenv("MODEL_QWEN_ALIAS", "qwen2.5-coder:3b")
         qwen_name = os.getenv("MODEL_QWEN_NAME", "qwen2.5-coder:3b")
+        qwen3_alias = os.getenv("MODEL_QWEN3_ALIAS", "qwen3:8b")
+        qwen3_name = os.getenv("MODEL_QWEN3_NAME", "qwen3:8b")
         exaone_alias = os.getenv("MODEL_EXAONE_ALIAS", "exaone-deep:2.4b")
         exaone_name = os.getenv("MODEL_EXAONE_NAME", "exaone-deep:2.4b")
 
         self.model_alias_map: Dict[str, str] = {
             qwen_alias: qwen_name,
+            qwen3_alias: qwen3_name,
             exaone_alias: exaone_name,
         }
 
